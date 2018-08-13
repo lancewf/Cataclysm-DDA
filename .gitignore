@@ -155,3 +155,5 @@ stage
 
 # Apple Xcode IDE
 Xcode/
+results/
+.bash_history
