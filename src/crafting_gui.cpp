@@ -101,19 +101,16 @@ void reset_recipe_categories()
 std::vector<std::string> get_folded_byproducts( const recipe &r, int batch, nc_color col)
 {
     std::vector<std::string> out_buffer;
-    std::ostringstream current_line;
-    auto col_s = string_from_color(col);
-    if( !r.has_byproducts() ) {
-        current_line << "<color_" << col_s << ">Byproducts: </color>";
-        out_buffer.push_back( current_line.str() );
-        current_line.str( "" );
 
-	current_line << "<color_" << col_s << ">" << _( "> extra stuff (250)" ) << "</color>";
-	out_buffer.push_back( current_line.str() );
-	current_line.str( "" );
+    const auto &req = r.requirements();
+    const auto components_byproducts = req.get_container_components_byproducts(batch); 
 
+    if( !r.has_byproducts() && components_byproducts.empty() ) {
         return out_buffer;
     }
+    std::ostringstream current_line;
+    auto col_s = string_from_color(col);
+
     current_line << "<color_" << col_s << ">Byproducts: </color>";
     out_buffer.push_back( current_line.str() );
     current_line.str( "" );
@@ -129,6 +126,16 @@ std::vector<std::string> get_folded_byproducts( const recipe &r, int batch, nc_c
             desc = string_format( "> %d %s", amount,
                                   t->nname( static_cast<unsigned int>( amount ) ).c_str() );
         }
+	current_line << "<color_" << col_s << ">" << _( desc.c_str() ) << "</color>";
+	out_buffer.push_back( current_line.str() );
+	current_line.str( "" );
+    }
+
+    for( const auto &bp : components_byproducts ) {
+        const auto t = item::find_type( bp.first );
+        int amount = bp.second;
+        std::string desc = string_format( "> %d %s", amount,
+                             t->nname( static_cast<unsigned int>( amount ) ).c_str() );
 	current_line << "<color_" << col_s << ">" << _( desc.c_str() ) << "</color>";
 	out_buffer.push_back( current_line.str() );
 	current_line.str( "" );

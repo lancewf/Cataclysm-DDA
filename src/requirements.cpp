@@ -426,6 +426,16 @@ void requirement_data::reset()
     requirements_all.clear();
 }
 
+
+std::map<itype_id, int> requirement_data::get_container_components_byproducts(int batch) const
+{
+    std::map<itype_id, int> byproducts;
+
+    byproducts["gasoline"] = 250 * batch;
+
+    return byproducts;
+}
+
 std::vector<std::string> requirement_data::get_folded_components_list( int width, nc_color col,
         const inventory &crafting_inv, int batch, std::string hilite ) const
 {
