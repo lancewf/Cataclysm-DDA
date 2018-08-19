@@ -856,11 +856,30 @@ static int amount_of_internal( const T &self, const itype_id &id, bool pseudo, i
     return qty;
 }
 
+template <typename T>
+static int amount_of_internal_container( const T &self, const itype_id &id, bool pseudo, int limit )
+{
+    int qty = 0;
+    self.visit_items( [&qty, &id, &pseudo, &limit]( const item * e ) {
+        if( e->typeId() == id && e->allow_crafting_component_with_containers() && ( pseudo || !e->has_flag( "PSEUDO" ) ) ) {
+            qty = sum_no_wrap( qty, 1 );
+        }
+        return qty != limit ? VisitResponse::NEXT : VisitResponse::ABORT;
+    } );
+    return qty;
+}
+
 /** @relates visitable */
 template <typename T>
 int visitable<T>::amount_of( const std::string &what, bool pseudo, int limit ) const
 {
     return amount_of_internal( *this, what, pseudo, limit );
+}
+
+template <typename T>
+int visitable<T>::amount_of_container( const std::string &what, bool pseudo, int limit ) const
+{
+    return amount_of_internal_container( *this, what, pseudo, limit );
 }
 
 /** @relates visitable */

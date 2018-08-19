@@ -533,6 +533,8 @@ class item : public visitable<item>
     /** Can item can be used as crafting component in current state? */
     bool allow_crafting_component() const;
 
+    bool allow_crafting_component_with_containers() const;
+
     /**
      * @name Containers
      *

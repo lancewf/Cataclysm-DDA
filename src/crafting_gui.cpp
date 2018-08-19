@@ -98,17 +98,26 @@ void reset_recipe_categories()
     craft_subcat_list.clear();
 }
 
-
-int print_items( const recipe &r, const catacurses::window &w, int ypos, int xpos, nc_color col,
-                 int batch )
+std::vector<std::string> get_folded_byproducts( const recipe &r, int batch, nc_color col)
 {
+    std::vector<std::string> out_buffer;
+    std::ostringstream current_line;
+    auto col_s = string_from_color(col);
     if( !r.has_byproducts() ) {
-        return 0;
+        current_line << "<color_" << col_s << ">Byproducts: </color>";
+        out_buffer.push_back( current_line.str() );
+        current_line.str( "" );
+
+	current_line << "<color_" << col_s << ">" << _( "> extra stuff (250)" ) << "</color>";
+	out_buffer.push_back( current_line.str() );
+	current_line.str( "" );
+
+        return out_buffer;
     }
-
-    const int oldy = ypos;
-
-    mvwprintz( w, ypos++, xpos, col, _( "Byproducts:" ) );
+    current_line << "<color_" << col_s << ">Byproducts: </color>";
+    out_buffer.push_back( current_line.str() );
+    current_line.str( "" );
+    
     for( const auto &bp : r.byproducts ) {
         const auto t = item::find_type( bp.first );
         int amount = bp.second * batch;
@@ -120,10 +129,12 @@ int print_items( const recipe &r, const catacurses::window &w, int ypos, int xpo
             desc = string_format( "> %d %s", amount,
                                   t->nname( static_cast<unsigned int>( amount ) ).c_str() );
         }
-        mvwprintz( w, ypos++, xpos, col, desc.c_str() );
+	current_line << "<color_" << col_s << ">" << _( desc.c_str() ) << "</color>";
+	out_buffer.push_back( current_line.str() );
+	current_line.str( "" );
     }
 
-    return ypos - oldy;
+    return out_buffer;
 }
 
 const recipe *select_crafting_recipe( int &batch_size )
@@ -448,6 +459,8 @@ const recipe *select_crafting_recipe( int &batch_size )
             std::vector<std::string> component_print_buffer;
             auto tools = req.get_folded_tools_list( pane, col, crafting_inv, count );
             auto comps = req.get_folded_components_list( pane, col, crafting_inv, count, qry_comps );
+            auto byproducts = get_folded_byproducts( *current[line], batch ? line + 1 : 1, col );
+            component_print_buffer.insert( component_print_buffer.end(), byproducts.begin(), byproducts.end() );
             component_print_buffer.insert( component_print_buffer.end(), tools.begin(), tools.end() );
             component_print_buffer.insert( component_print_buffer.end(), comps.begin(), comps.end() );
 
@@ -488,8 +501,7 @@ const recipe *select_crafting_recipe( int &batch_size )
 
             if( display_mode == 0 ) {
                 const int width = getmaxx( w_data ) - xpos - item_info_x;
-                mvwprintz( w_data, ypos++, xpos, col, _( "Skills used: %s" ),
-                           ( !current[line]->skill_used ? _( "N/A" ) :
+                mvwprintz( w_data, ypos++, xpos, col, _( "Skills used: %s" ), ( !current[line]->skill_used ? _( "N/A" ) :
                              current[line]->skill_used.obj().name().c_str() ) );
                 ypos += fold_and_print( w_data, ypos, xpos, width, col, _( "Required skills: %s" ),
                                         current[line]->required_skills_string().c_str() );
@@ -511,7 +523,6 @@ const recipe *select_crafting_recipe( int &batch_size )
                            current[line]->has_flag( "BLIND_EASY" ) ? _( "Easy" ) :
                            current[line]->has_flag( "BLIND_HARD" ) ? _( "Hard" ) :
                            _( "Impossible" ) );
-                ypos += print_items( *current[line], w_data, ypos, xpos, col, batch ? line + 1 : 1 );
             }
 
             //color needs to be preserved in case part of the previous page was cut off

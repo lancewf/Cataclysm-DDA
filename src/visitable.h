@@ -87,9 +87,16 @@ class visitable
         int amount_of( const std::string &what, bool pseudo = true,
                        int limit = std::numeric_limits<int>::max() ) const;
 
+        int amount_of_container( const std::string &what, bool pseudo = true,
+                       int limit = std::numeric_limits<int>::max() ) const;
+
         /** Check instance provides at least qty of an item (@see amount_of) */
         bool has_amount( const std::string &what, int qty, bool pseudo = true ) const {
             return amount_of( what, pseudo, qty ) == qty;
+        }
+
+        bool has_amount_container( const std::string &what, int qty, bool pseudo = true ) const {
+            return amount_of_container( what, pseudo, qty ) == qty;
         }
 
         /** Returns all items (including those within a container) matching the filter */

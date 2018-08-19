@@ -5372,7 +5372,29 @@ bool item::allow_crafting_component() const
     if( is_filthy() ) {
         return false;
     }
+    // Here is why containers with gas are not used
     return contents.empty();
+}
+
+bool item::allow_crafting_component_with_containers() const
+{
+    // vehicle batteries are implemented as magazines of charge
+    if( is_magazine() && ammo_type() == ammotype( "battery" ) ) {
+        return true;
+    }
+
+    // fixes #18886 - turret installation may require items with irremovable mods
+    if( is_gun() ) {
+        return std::all_of( contents.begin(), contents.end(), [&]( const item &e ) {
+            return e.is_magazine() || ( e.is_gunmod() && e.is_irremovable() );
+        } );
+    }
+
+    if( is_filthy() ) {
+        return false;
+    }
+
+    return true;
 }
 
 void item::fill_with( item &liquid, long amount )

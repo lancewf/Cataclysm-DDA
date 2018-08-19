@@ -675,6 +675,11 @@ bool inventory::has_tools(const itype_id &it, int quantity) const
     return has_amount(it, quantity, true);
 }
 
+bool inventory::has_container_components(const itype_id &it, int quantity) const
+{
+    return has_amount_container(it, quantity, false);
+}
+
 bool inventory::has_components(const itype_id &it, int quantity) const
 {
     return has_amount(it, quantity, false);

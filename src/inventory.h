@@ -132,6 +132,7 @@ class inventory : public visitable<inventory>
 
         bool has_tools( const itype_id &it, int quantity ) const;
         bool has_components( const itype_id &it, int quantity ) const;
+        bool has_container_components( const itype_id &it, int quantity ) const;
         bool has_charges( const itype_id &it, long quantity ) const;
 
         int leak_level( std::string flag ) const; // level of leaked bad stuff from items

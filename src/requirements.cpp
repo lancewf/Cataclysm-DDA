@@ -652,7 +652,12 @@ bool item_comp::has( const inventory &crafting_inv, int batch, std::function<voi
     }
 
     const int cnt = std::abs( count ) * batch;
-    if( item::count_by_charges( type ) ) {
+
+    auto type2 = item::find_type( type );
+    // could add the container check here.
+    if ( type2->container.has_value() ) {
+        return crafting_inv.has_container_components( type, cnt );
+    } else if( item::count_by_charges( type ) ) {
         return crafting_inv.has_charges( type, cnt );
     } else {
         return crafting_inv.has_components( type, cnt );
