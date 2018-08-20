@@ -225,7 +225,7 @@ struct requirement_data {
         std::vector<std::string> get_folded_tools_list( int width, nc_color col,
                 const inventory &crafting_inv, int batch = 1 ) const;
 
-	std::map<itype_id, int> get_container_components_byproducts(int batch) const;
+	std::vector<std::vector<std::map<itype_id, int>>> get_container_components_byproducts(const inventory &crafting_inv, int batch) const;
 
         /**
          * Gets a variant of this recipe with crafting-only tools replaced by their

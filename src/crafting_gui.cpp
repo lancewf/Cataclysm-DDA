@@ -98,14 +98,14 @@ void reset_recipe_categories()
     craft_subcat_list.clear();
 }
 
-std::vector<std::string> get_folded_byproducts( const recipe &r, int batch, nc_color col)
+std::vector<std::string> get_folded_byproducts( const recipe &r, const inventory &crafting_inv, int batch, nc_color col)
 {
     std::vector<std::string> out_buffer;
 
     const auto &req = r.requirements();
-    const auto components_byproducts = req.get_container_components_byproducts(batch); 
+    const auto collection_byprods_options = req.get_container_components_byproducts(crafting_inv, batch); 
 
-    if( !r.has_byproducts() && components_byproducts.empty() ) {
+    if( !r.has_byproducts() && collection_byprods_options.empty() ) {
         return out_buffer;
     }
     std::ostringstream current_line;
@@ -131,14 +131,24 @@ std::vector<std::string> get_folded_byproducts( const recipe &r, int batch, nc_c
 	current_line.str( "" );
     }
 
-    for( const auto &bp : components_byproducts ) {
-        const auto t = item::find_type( bp.first );
-        int amount = bp.second;
-        std::string desc = string_format( "> %d %s", amount,
-                             t->nname( static_cast<unsigned int>( amount ) ).c_str() );
-	current_line << "<color_" << col_s << ">" << _( desc.c_str() ) << "</color>";
-	out_buffer.push_back( current_line.str() );
-	current_line.str( "" );
+    for( const auto &byprods_options : collection_byprods_options ) {
+        for( const auto &byprods : byprods_options ) {
+            for( const auto &bp : byprods ) {
+		const auto t = item::find_type( bp.first );
+		int amount = bp.second;
+                std::string desc;
+		if( t->count_by_charges() ) {
+		    amount *= t->charges_default();
+		    desc = string_format( "> %s (%d)", t->nname( 1 ).c_str(), amount );
+		} else {
+		    desc = string_format( "> %d %s", amount,
+					  t->nname( static_cast<unsigned int>( amount ) ).c_str() );
+		}
+		current_line << "<color_" << col_s << ">" << _( desc.c_str() ) << "</color>";
+		out_buffer.push_back( current_line.str() );
+		current_line.str( "" );
+	    }
+	}
     }
 
     return out_buffer;
@@ -466,7 +476,7 @@ const recipe *select_crafting_recipe( int &batch_size )
             std::vector<std::string> component_print_buffer;
             auto tools = req.get_folded_tools_list( pane, col, crafting_inv, count );
             auto comps = req.get_folded_components_list( pane, col, crafting_inv, count, qry_comps );
-            auto byproducts = get_folded_byproducts( *current[line], batch ? line + 1 : 1, col );
+            auto byproducts = get_folded_byproducts( *current[line], crafting_inv, batch ? line + 1 : 1, col );
             component_print_buffer.insert( component_print_buffer.end(), byproducts.begin(), byproducts.end() );
             component_print_buffer.insert( component_print_buffer.end(), tools.begin(), tools.end() );
             component_print_buffer.insert( component_print_buffer.end(), comps.begin(), comps.end() );
