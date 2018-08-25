@@ -5394,7 +5394,12 @@ bool item::allow_crafting_component_with_containers() const
         return false;
     }
 
-    return true;
+
+    if( !contents.empty() ) {
+      return contents.size() == 1 && is_watertight_container();
+    } else {
+      return true;
+    }
 }
 
 void item::fill_with( item &liquid, long amount )

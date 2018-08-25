@@ -114,7 +114,7 @@ std::vector<std::string> get_folded_byproducts( const recipe &r, const inventory
     current_line << "<color_" << col_s << ">Byproducts: </color>";
     out_buffer.push_back( current_line.str() );
     current_line.str( "" );
-    
+
     for( const auto &bp : r.byproducts ) {
         const auto t = item::find_type( bp.first );
         int amount = bp.second * batch;
@@ -126,29 +126,29 @@ std::vector<std::string> get_folded_byproducts( const recipe &r, const inventory
             desc = string_format( "> %d %s", amount,
                                   t->nname( static_cast<unsigned int>( amount ) ).c_str() );
         }
-	current_line << "<color_" << col_s << ">" << _( desc.c_str() ) << "</color>";
-	out_buffer.push_back( current_line.str() );
-	current_line.str( "" );
+        current_line << "<color_" << col_s << ">" << _( desc.c_str() ) << "</color>";
+        out_buffer.push_back( current_line.str() );
+        current_line.str( "" );
     }
 
     for( const auto &byprods_options : collection_byprods_options ) {
         for( const auto &byprods : byprods_options ) {
             for( const auto &bp : byprods ) {
-		const auto t = item::find_type( bp.first );
-		int amount = bp.second;
+                const auto t = item::find_type( bp.first );
+                int amount = bp.second;
                 std::string desc;
-		if( t->count_by_charges() ) {
-		    amount *= t->charges_default();
-		    desc = string_format( "> %s (%d)", t->nname( 1 ).c_str(), amount );
-		} else {
-		    desc = string_format( "> %d %s", amount,
-					  t->nname( static_cast<unsigned int>( amount ) ).c_str() );
-		}
-		current_line << "<color_" << col_s << ">" << _( desc.c_str() ) << "</color>";
-		out_buffer.push_back( current_line.str() );
-		current_line.str( "" );
-	    }
-	}
+                if( t->count_by_charges() ) {
+                    amount *= t->charges_default();
+                    desc = string_format( "> %s (%d)", t->nname( 1 ).c_str(), amount );
+                } else {
+                    desc = string_format( "> %d %s", amount,
+                    t->nname( static_cast<unsigned int>( amount ) ).c_str() );
+                }
+                current_line << "<color_" << col_s << ">" << _( desc.c_str() ) << "</color>";
+                out_buffer.push_back( current_line.str() );
+                current_line.str( "" );
+            }
+        }
     }
 
     return out_buffer;

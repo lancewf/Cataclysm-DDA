@@ -426,45 +426,48 @@ void requirement_data::reset()
     requirements_all.clear();
 }
 
-
+// get_container_components_byproducts - find the needed container to craft with including nonempty ones 
+// For needed containers that are not empty, return their contents 
 std::vector<std::vector<std::map<itype_id, int>>> requirement_data::get_container_components_byproducts(
-		const inventory &crafting_inv, int batch) const
+    const inventory &crafting_inv, int batch) const
 {
     std::vector<std::vector<std::map<itype_id, int>>> collection_byprods_options;
     if( components.empty() ) {
         return collection_byprods_options;
     }
 
-    auto inv = crafting_inv.get_binned_items();
     can_make_with_inventory( crafting_inv );
+    auto inv = crafting_inv.get_binned_items();
+
     for( const auto &comp_list : components ) {
         std::vector<std::map<itype_id, int>> byprods_options;
 
         for( auto a : comp_list) {
-	    auto type2 = item::find_type( a.type );
-	    if( !type2->container.has_value() ) {
-		continue;
-	    }
+            auto type2 = item::find_type( a.type );
+            if( !type2->container.has_value() ) {
+                continue;// it is not a container
+            }
             std::map<itype_id, int> byprods;
-	    auto foundItems = inv[a.type];
-	    if( foundItems.size() >= (unsigned) batch ) { // not enough items.
-	        for( auto item : foundItems ) {
-	            if( item->is_watertight_container() && item->contents.size() == 1 ) {
-		        if( !item->is_container_empty() ) {
-                            auto contents = item->contents.front();
-		            byprods[contents.type->get_id()] = contents.charges;
-			}
-	            }
-	        }
-	    }
+            auto foundItems = inv[a.type];
+            if( foundItems.size() >= (unsigned) batch ) { 
+                foundItems.resize(batch);
+                for( auto item : foundItems) {
+                    if( item->contents.size() == 1 ) {
+                        auto contents = item->contents.front();
+                        byprods[contents.type->get_id()] = contents.charges;
+                    } else {
+                        //empty container count it
+                    }
+                }
+            }
 
             if( !byprods.empty()) {
-	       byprods_options.push_back(byprods);
-	    }
+                byprods_options.push_back(byprods);
+            }
         }
         if( !byprods_options.empty()) {
             collection_byprods_options.push_back(byprods_options);
-	}
+        }
     }
 
     return collection_byprods_options;
